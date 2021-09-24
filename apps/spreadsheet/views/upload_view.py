@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.spreadsheet.serializers.upload_serializer import UploadSerializer
@@ -21,6 +21,7 @@ class UploadView(APIView):
             if serializer.is_valid():
                 b = serializer.validated_data['file']
                 f = 0
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         # serializer.data
         # a = serializer.is_valid()
         except KeyError as e:

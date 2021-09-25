@@ -1,1 +1,3 @@
-from .spreadsheet_summary_request_model import SpreadsheetSummaryRequestModel
+from .result import Result
+from .spreadsheet_summary_request import SpreadsheetSummaryRequest
+from .spreadsheet_summary_response import SpreadsheetSummaryResponse

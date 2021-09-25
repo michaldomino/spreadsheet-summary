@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from typing import List, Dict, Any
 
 
-class SpreadsheetSummaryRequestModel:
+class SpreadsheetSummaryRequest:
 
     def __init__(self, file_name: str, header_row: int, start_row: int, end_rows_skipped: int, columns: 'List[str]'):
         self.file_name = file_name
@@ -15,7 +15,7 @@ class SpreadsheetSummaryRequestModel:
 
     @staticmethod
     def from_validated_data(validated_data: 'Dict[str, Any]'):
-        return SpreadsheetSummaryRequestModel(
+        return SpreadsheetSummaryRequest(
             file_name=validated_data['file_name'],
             header_row=validated_data['header_row'],
             start_row=validated_data['start_row'],

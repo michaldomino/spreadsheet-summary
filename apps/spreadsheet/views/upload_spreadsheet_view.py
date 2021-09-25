@@ -19,4 +19,5 @@ class UploadSpreadsheetView(APIView):
             storage_service = StorageService()
             file = serializer.validated_data['file']
             storage_service.save(file)
+            return Response(status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

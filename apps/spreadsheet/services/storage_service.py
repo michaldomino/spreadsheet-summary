@@ -7,7 +7,10 @@ class StorageService:
         self._storage = DefaultStorage()
 
     def save(self, file):
-        self._storage.save(file.name, file)
+        file_name = file.name
+        if self._storage.exists(file_name):
+            self._storage.delete(file_name)
+        self._storage.save(file_name, file)
 
     def open(self, file_name):
         return self._storage.open(file_name)

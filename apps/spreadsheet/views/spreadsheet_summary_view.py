@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.spreadsheet.non_data_models import SpreadsheetSummaryRequestModel
 from apps.spreadsheet.serializers import SpreadsheetSummaryRequestSerializer
 from apps.spreadsheet.services import StorageService
 
@@ -21,20 +22,15 @@ class SpreadsheetSummaryView(APIView):
         request_serializer = SpreadsheetSummaryRequestSerializer(data=request.data)
         if request_serializer.is_valid():
             try:
+                request_model = SpreadsheetSummaryRequestModel.from_validated_data(request_serializer.validated_data)
                 storage_service = StorageService()
-                file = storage_service.open(request_serializer.validated_data['file_name'])
+                file = storage_service.open(request_model.file_name)
                 data_frame: 'DataFrame' = pandas.read_excel(file.read(),
-                                                            skiprows=request_serializer.validated_data['start_row'])
-                column_names = [column_name.strip() for column_name in request_serializer.validated_data['columns']]
+                                                            skiprows=request_model.header_row)
+                column_names = [column_name.strip() for column_name in request_model.columns]
                 data_frame = data_frame.rename(columns=lambda column: column.strip())
-                x = data_frame[column_names[0]].sum()
-                a = data_frame[column_names[0]][0:-1].sum()
-                y = np.sum(data_frame.groupby(by=column_names[0]).sum())
-                z = data_frame.groupby(column_names[0]).sum().sum()
-
-                x1 = data_frame[column_names[0]].mean(skipna=True)
-                y1 = np.mean(data_frame.groupby(by=column_names[0]).mean())
-                z1 = data_frame.groupby(column_names[0]).mean().mean()
+                a = data_frame[['CURRENT USD', 'CURRENT CAD']][0:-1].sum()
+                b = a['CURRENT USD']
                 f = 0
             except FileNotFoundError as e:
                 return Response(data={'detail': f'File "{os.path.basename(e.filename)}" not uploaded.'},

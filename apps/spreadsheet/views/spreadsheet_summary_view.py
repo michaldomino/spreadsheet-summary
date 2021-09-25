@@ -1,11 +1,11 @@
 import os
 from typing import TYPE_CHECKING
 
-import numpy as np
 import pandas
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.spreadsheet.non_data_models import SpreadsheetSummaryRequest, SpreadsheetSummaryResponse, Result
 from apps.spreadsheet.serializers import SpreadsheetSummaryRequestSerializer, SpreadsheetSummaryResponseSerializer
@@ -16,8 +16,10 @@ if TYPE_CHECKING:
     from rest_framework.request import Request
 
 
-class SpreadsheetSummaryView(APIView):
+class SpreadsheetSummaryView(GenericAPIView):
 
+    @swagger_auto_schema(request_body=SpreadsheetSummaryRequestSerializer(),
+                         responses={200: SpreadsheetSummaryResponseSerializer()})
     def post(self, request: 'Request'):
         request_serializer = SpreadsheetSummaryRequestSerializer(data=request.data)
         if request_serializer.is_valid():

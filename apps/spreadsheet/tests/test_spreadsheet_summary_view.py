@@ -17,7 +17,7 @@ test_settings = override_settings(
 
 
 @test_settings
-class TestSpreadsheetView(APITestCase):
+class TestSpreadsheetSummaryView(APITestCase):
     _SPREADSHEET_PATH = 'apps/spreadsheet/tests/resources/test_spreadsheet.xlsx'
 
     def setUp(self) -> None:
@@ -26,11 +26,11 @@ class TestSpreadsheetView(APITestCase):
         self.summary_url = reverse('summary')
 
         self._upload_spreadsheet()
-        return super().setUp()
+        super().setUp()
 
     def tearDown(self) -> None:
         DefaultStorage().delete(self.spreadsheet_file_name)
-        return super().tearDown()
+        super().tearDown()
 
     def test_summary_should_return_ok_when_correct(self):
         data = {

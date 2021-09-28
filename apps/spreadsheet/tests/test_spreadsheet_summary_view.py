@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.spreadsheet.services import StorageService
+from apps.spreadsheet.tests.resources import TEST_SPREADSHEET_XLSX
 
 test_settings = override_settings(
     MEDIA_ROOT='/tmp/django/spreadsheet_summary/test/'
@@ -18,7 +19,7 @@ test_settings = override_settings(
 
 @test_settings
 class TestSpreadsheetSummaryView(APITestCase):
-    _SPREADSHEET_PATH = 'apps/spreadsheet/tests/resources/test_spreadsheet.xlsx'
+    _SPREADSHEET_PATH = TEST_SPREADSHEET_XLSX
 
     def setUp(self) -> None:
         self.spreadsheet_file_name = os.path.basename(self._SPREADSHEET_PATH)

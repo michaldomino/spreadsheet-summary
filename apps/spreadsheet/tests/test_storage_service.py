@@ -35,3 +35,14 @@ class TestStorageService(TestCase, AssertNotRaisesMixin):
         self.storage_service.save(in_memory_file)
 
         self.assertNotRaises(attempt_to_open_spreadsheet_using_default_storage)
+
+    def test_service_should_open_when_saved(self):
+        in_memory_file = open_as_in_memory_uploaded_file(self._SPREADSHEET_PATH)
+        self.default_storage.save(in_memory_file.name, in_memory_file.file)
+
+        self.assertNotRaises(attempt_to_open_spreadsheet_using_default_storage)
+
+    def test_service_should_raise_file_not_found_exception_when_file_does_not_exist(self):
+        def open_not_existing_file(): self.storage_service.open('does_not_exist.xlsx')
+
+        self.assertRaises(FileNotFoundError, open_not_existing_file)

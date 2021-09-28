@@ -27,6 +27,7 @@ class SpreadsheetSummaryView(GenericAPIView):
                 request_model = SpreadsheetSummaryRequest.from_validated_data(request_serializer.validated_data)
                 data_frame = self._prepare_data_frame(request_model)
                 column_names = [column_name.strip() for column_name in request_model.columns]
+                self._check_columns(data_frame, column_names)
                 spreadsheet_summary_service = SpreadsheetSummaryService(data_frame)
                 sum_results = spreadsheet_summary_service.calculate_sum(column_names, request_model.start_row,
                                                                         request_model.end_rows_skipped)
@@ -38,7 +39,8 @@ class SpreadsheetSummaryView(GenericAPIView):
                 return Response(data={'detail': f'File "{os.path.basename(e.filename)}" not uploaded.'},
                                 status=status.HTTP_400_BAD_REQUEST)
             except KeyError as e:
-                return Response(data={'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(data={'details': list(e.args)},
+                                status=status.HTTP_400_BAD_REQUEST)
         return Response(request_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
@@ -57,3 +59,9 @@ class SpreadsheetSummaryView(GenericAPIView):
         response = SpreadsheetSummaryResponse(file_name, summary=results)
         response_serializer = SpreadsheetSummaryResponseSerializer(response)
         return Response(response_serializer.data)
+
+    @staticmethod
+    def _check_columns(data_frame, column_names):
+        not_existing_columns = set(column_names).difference(set(data_frame))
+        if not_existing_columns:
+            raise KeyError(f'Columns: {list(not_existing_columns)} do not exist.')

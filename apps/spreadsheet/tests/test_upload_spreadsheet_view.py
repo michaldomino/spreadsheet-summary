@@ -8,6 +8,8 @@ from rest_framework.test import APITestCase
 
 from apps.spreadsheet.services import StorageService
 from apps.spreadsheet.tests.resources import TEST_SPREADSHEET_XLSX, TEXT_FILE_TXT
+from apps.spreadsheet.tests.scripts.assert_not_raises_mixin import AssertNotRaisesMixin
+from apps.spreadsheet.tests.scripts.test_helpers import attempt_to_open_spreadsheet_using_default_storage
 
 test_settings = override_settings(
     MEDIA_ROOT='/tmp/django/spreadsheet_summary/test/'
@@ -15,7 +17,7 @@ test_settings = override_settings(
 
 
 @test_settings
-class TestUploadSpreadsheetView(APITestCase):
+class TestUploadSpreadsheetView(APITestCase, AssertNotRaisesMixin):
     _SPREADSHEET_PATH = TEST_SPREADSHEET_XLSX
     _TEXT_FILE_PATH = TEXT_FILE_TXT
 
@@ -45,7 +47,7 @@ class TestUploadSpreadsheetView(APITestCase):
                 'file': file
             }
             self.client.post(self.upload_url, data=request_data)
-            self.assertNotRaises(self.open_file)
+            self.assertNotRaises(attempt_to_open_spreadsheet_using_default_storage)
         with open(self._SPREADSHEET_PATH, 'rb') as file:
             request_data = {
                 'file': file
@@ -61,10 +63,10 @@ class TestUploadSpreadsheetView(APITestCase):
                 'file': file
             }
 
-            self.assertRaises(FileNotFoundError, self.open_file)
+            self.assertRaises(FileNotFoundError, attempt_to_open_spreadsheet_using_default_storage)
             self.client.post(self.upload_url, data=request_data)
 
-            self.assertNotRaises(self.open_file)
+            self.assertNotRaises(attempt_to_open_spreadsheet_using_default_storage)
 
     def test_upload_should_return_bad_request_when_incorrect_file_type(self):
         with open(self._TEXT_FILE_PATH, 'rb') as file:
@@ -83,10 +85,3 @@ class TestUploadSpreadsheetView(APITestCase):
     def open_file(self):
         file = self.storage_service.open(self.spreadsheet_file_name)
         file.close()
-
-    def assertNotRaises(self, callable):
-        try:
-            callable()
-        except Exception as e:
-            self.assertTrue(False, msg=f'Exception of type: "{type(e).__name__}" was thrown')
-        self.assertTrue(True)

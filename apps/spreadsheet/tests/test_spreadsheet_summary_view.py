@@ -1,16 +1,14 @@
-import io
 import os
 
 from django.core.files.storage import DefaultStorage
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import override_settings
 from django.urls import reverse
-from openpyxl.packaging.manifest import mimetypes
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from apps.spreadsheet.services import StorageService
 from apps.spreadsheet.tests.resources import TEST_SPREADSHEET_XLSX
+from apps.spreadsheet.tests.scripts.test_helpers import open_as_in_memory_uploaded_file
 
 test_settings = override_settings(
     MEDIA_ROOT='/tmp/django/spreadsheet_summary/test/'
@@ -161,20 +159,7 @@ class TestSpreadsheetSummaryView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, expected_data)
 
-    @staticmethod
-    def _get_file_size(file):
-        file.seek(0)
-        file.read()
-        size = file.tell()
-        file.seek(0)
-        return size
-
     def _upload_spreadsheet(self):
         storage_service = StorageService()
-        with open(self._SPREADSHEET_PATH, 'rb') as file:
-            file_object = io.BytesIO(file.read())
-            name = os.path.basename(file.name)
-            size = self._get_file_size(file)
-            content_type, charset = mimetypes.guess_type(name)
-            in_memory_file = InMemoryUploadedFile(file_object, None, name, content_type, size, charset)
-            storage_service.save(in_memory_file)
+        in_memory_file = open_as_in_memory_uploaded_file(self._SPREADSHEET_PATH)
+        storage_service.save(in_memory_file)

@@ -1,5 +1,7 @@
+import zipfile
 from typing import TYPE_CHECKING
 
+import openpyxl
 from drf_yasg import renderers
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, parsers
@@ -22,8 +24,20 @@ class UploadSpreadsheetView(GenericAPIView):
     def post(self, request: 'Request'):
         serializer = UploadSpreadsheetSerializer(data=request.data)
         if serializer.is_valid():
-            storage_service = StorageService()
-            file = serializer.validated_data['file']
-            storage_service.save(file)
-            return Response(status=status.HTTP_200_OK)
+            try:
+                storage_service = StorageService()
+                file = serializer.validated_data['file']
+                self._check_file(file)
+                storage_service.save(file)
+                return Response(status=status.HTTP_200_OK)
+            except zipfile.BadZipfile as e:
+                return Response(data={'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @staticmethod
+    def _check_file(file):
+        try:
+            file = openpyxl.open(file)
+        except zipfile.BadZipfile:
+            raise zipfile.BadZipfile('File is not an Excel spreadsheet')
+        file.close()

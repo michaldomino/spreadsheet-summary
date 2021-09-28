@@ -119,6 +119,48 @@ class TestSpreadsheetSummaryView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, expected_data)
 
+    def test_summary_should_calculate_correctly_when_start_row_provided(self):
+        request_data = {
+            'file_name': self.spreadsheet_file_name,
+            'header_row': self.header_row,
+            'start_row': 3,
+            'columns': ['ONE LINE', 'MULTI LINE TEXT', 'PERCENT']
+        }
+        expected_data = {
+            'file': self.spreadsheet_file_name,
+            'summary': [
+                {'column': 'ONE LINE', 'sum': 28.0, 'avg': 4.666666666666667},
+                {'column': 'MULTI LINE TEXT', 'sum': 516.912, 'avg': 86.152},
+                {'column': 'PERCENT', 'sum': 2197.6608643, 'avg': 366.27681071666666}
+            ]
+        }
+
+        response = self.client.post(self.summary_url, request_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
+    def test_summary_should_calculate_correctly_when_end_rows_skipped_provided(self):
+        request_data = {
+            'file_name': self.spreadsheet_file_name,
+            'header_row': self.header_row,
+            'end_rows_skipped': 2,
+            'columns': ['ONE LINE', 'MULTI LINE TEXT', 'PERCENT']
+        }
+        expected_data = {
+            'file': self.spreadsheet_file_name,
+            'summary': [
+                {'column': 'ONE LINE', 'sum': 15.5, 'avg': 2.5833333333333335},
+                {'column': 'MULTI LINE TEXT', 'sum': 150.0, 'avg': 25.0},
+                {'column': 'PERCENT', 'sum': 1098.8254322, 'avg': 183.13757203333333}
+            ]
+        }
+
+        response = self.client.post(self.summary_url, request_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, expected_data)
+
     @staticmethod
     def _get_file_size(file):
         file.seek(0)

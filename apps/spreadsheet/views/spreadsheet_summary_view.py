@@ -45,7 +45,7 @@ class SpreadsheetSummaryView(GenericAPIView):
     def _prepare_data_frame(request_model):
         storage_service = StorageService()
         file = storage_service.open(request_model.file_name)
-        data_frame: 'DataFrame' = pandas.read_excel(file.read(), skiprows=request_model.header_row)
+        data_frame: 'DataFrame' = pandas.read_excel(file.read(), skiprows=request_model.header_row, engine='openpyxl')
         return data_frame.rename(columns=lambda column: column.strip())
 
     @staticmethod
